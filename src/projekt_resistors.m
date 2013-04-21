@@ -1,7 +1,7 @@
 close all;
 clear all;
 
-I  = imread('white_3.png');
+I  = imread('../images/white_4.png');
 
 
 prah=0.5;
@@ -58,11 +58,23 @@ for i = 1:length(s)
     oblasti(i,4) = box(i,2);
     oblasti(i,5) = box(i,1)+box(i,3);
     oblasti(i,6) = box(i,2)+box(i,4);
-    oblasti(i,7) = box(i,2);
+    oblasti(i,7) = box(i,1);
     oblasti(i,8) = box(i,2)+box(i,4);
-   
+      
       
 end
   
    hold off
-
+   
+% figure(3);
+% oblast3 = I(oblasti(j,2):oblasti(j,8), oblasti(j,1):oblasti(j,3));
+% oblast3 = I(oblasti(1,2):oblasti(1,8), oblasti(1,1):oblasti(1,3));
+% oblast3 = I(200:600, 700:1600);
+% imshow(oblast3);
+% 
+% for j=1:length(s)
+% subplot(2,5,j);
+% 
+% oblast3 = I(oblasti(j,2):oblasti(j,8), oblasti(j,1):oblasti(j,3));
+% imshow(oblast3);
+% end
