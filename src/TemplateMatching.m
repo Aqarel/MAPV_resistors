@@ -4,12 +4,14 @@ clear all;
 clc;
 
 
+template = imread('../images/template.png');
+template = template(:,:,1) > 128;
 % ====== Constant ======
-seOpen = strel('square', 4);
-seClose = strel('square', 6);
-Tsat = 0.42;    % threshold - saturation from HSV
-resL = 124;     % resistor lenght in pixel
-resD = 37;     % resistor diameter in pixel
+seOpen = strel('square', 5);
+seClose = strel('square', 8);
+Tsat = 0.35;    % threshold - saturation from HSV
+resL = size(template,2);     % resistor lenght in pixel
+resD = size(template,1);     % resistor diameter in pixel
 
 
 Icolor  = imread('../images/white_4.png');%imread('../images/black_3.png');
@@ -51,6 +53,7 @@ if size(areaIndex,2) == 1
 end
 
 areaIndex = areaIndex(2:end);                       % first index is not used
+imshow(imBin)
 
 %%
 
@@ -88,3 +91,13 @@ for j = 1:length(areaIndex)
       
 end
 hold off
+%% find resistor
+for j = 1:length(areaIndex)
+    i=areaIndex(j);
+    for x = round(box(i,1)):round(box(i,1) + box(i,3))
+        for y = round(box(i,2)):round(box(i,2) + box(i,4))
+        
+        end
+    end
+end
+
