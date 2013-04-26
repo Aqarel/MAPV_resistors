@@ -1,4 +1,4 @@
-function R = corr2_wb(A, B, activeZone)
+function R = corr2_wb(image, template, activeZone)
 %
-tempSize = size(A);
-R = 1 - (sum(sum(abs(A - B).*activeZone))) / (tempSize(1) * tempSize(2));
+tempSize = size(image);
+R = 1 - (sum(sum(abs(image - template(:,:,1)).*activeZone))) / (tempSize(1) * tempSize(2) + sum(sum(abs(image - 2.*template(:,:,2)).*activeZone)));
