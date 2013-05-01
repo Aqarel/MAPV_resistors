@@ -2,12 +2,10 @@
 close all;
 clear all;
 clc;
-tic
-Icolor  = imread('../images/white_1.png');%imread('../images/black_3.png');
-template = imread('../images/template2.png');
-template_b = imread('../images/template2b.png');
-template = template(:,:,1) < 128;
-template_b = template_b(:,:,1) < 128;
+
+imCol  = imread('../images/white_1.png');%imread('../images/black_3.png');
+template = imread('../images/template3.png');
+
 % ====== Constant ======
 seOpen = strel('square', 5);
 seClose = strel('square', 8);
@@ -21,14 +19,14 @@ vAreaD = 10;                  % virtual area diameter, only for finding potentia
 
 % Detection from RGB  - problem with white_7
 
-% IGray = rgb2gray(Icolor);
+% IGray = rgb2gray(imCol);
 % se1 = strel('square', 10);
-% imBin = ~im2bw(Icolor,0.50);
+% imBin = ~im2bw(imCol,0.50);
 % imshow(imBin);
 
 % Detection from HSV
 
-Ihsv = rgb2hsv(Icolor);
+Ihsv = rgb2hsv(imCol);
 imBin = Ihsv(:,:,2) > Tsat;     % From saturation
 
 imBin = imopen(imBin, seOpen);
@@ -57,13 +55,10 @@ end
 
 areaIndex = areaIndex(2:end);                       % first index is not used
 imshow(imBin)
-toc
 
-%%
-
-tic   
+%% 
 figure(2);
-imshow(Icolor)
+imshow(imCol)
    hold on
    
  % *** vykresleni obdelniku kolem rezistoru do puvodního obrazku ***  
@@ -95,11 +90,13 @@ for j = 1:length(areaIndex)
       
 end
 hold off
-toc
 %% find resistor
 figure(3);
-imshow(Icolor);
+imshow(imCol);
 hold on
+g = 0;
+
+tic
 activeTempl = ones(size(template,1),size(template,2));  % mask for rotated resistor, corr calculate only from resistor area, no from blank space
 for j = 1:length(areaIndex)    % all areas
     iAr = areaIndex(j);
@@ -108,40 +105,30 @@ for j = 1:length(areaIndex)    % all areas
     area = zeros(areaY+vArea, areaX+vArea);
     area(1:areaY, 1:areaX) = imBin(round(box(iAr,2)):round(box(iAr,2)+areaY-1), round(box(iAr,1)):round(box(iAr,1)+areaX-1));   % copy found area from image
     bestCorr = zeros(areaX,areaY,2); % best correlation on the X, Y across fi; save correlation coeficient and fi
-    tic
     step = 2;
-    for fi = 0:step:180   % Angle                  
+    bigStep = 0;
+    fi = 0;
+    while fi < 180   % Angle 
+        g = g + 1;
         rotTempl = imrotate(template,fi);
-    
-        
+        [rotTempl xOff1 xOff2 yOff1 yOff2] = CropBlankSpace(rotTempl);
         templX = size(rotTempl,2);
         templY = size(rotTempl,1);
         
-        % crop blank space after rotate
-        xSum = sum(rotTempl,1);
-        ySum = sum(rotTempl,2);
-        xOff1 = sum(sum(xSum(1:round(templX/2))==0))+1; % get zeros on start x
-        xOff2 = xOff1;%sum(sum(xSum(round(templX/2):end)==0)); % get zeros on end x
-        yOff1 = sum(sum(ySum(1:round(templY/2))==0))+1; % get zeros on start y
-        yOff2 = yOff1;%sum(sum(ySum(round(templY/2):end)==0)); % get zeros on end y
-        
-        rotTempl = rotTempl(yOff1:end-yOff2,xOff1:end-xOff2);
-        
-        
-        templX = size(rotTempl,2);
-        templY = size(rotTempl,1);
         if (templX > (areaX+vArea)) || (templY > (areaY+vArea)) % template is in less one size bigger than area, try other rotation
-           step = 2;
+            fi = fi + 10;
+            bigStep = 1;
            continue; 
         end
-        step = 2;
         
-        rotTempl_b = imrotate(template_b,fi);
+        if(bigStep == 1)
+             fi = fi - 5;
+             bigStep = 0;
+            continue;
+        end
+        
         rotActiveTempl = imrotate(activeTempl,fi);
-        
-        rotTempl_b = rotTempl_b(yOff1:end-yOff2,xOff1:end-xOff2);
-        rotActiveTempl = rotActiveTempl(yOff1:end-yOff2,xOff1:end-xOff2);
-        
+        rotActiveTempl = rotActiveTempl(yOff1+1:end-yOff2,xOff1+1:end-xOff2);    
         
         if (templX >= areaX)
            stepsX = 1; 
@@ -154,73 +141,102 @@ for j = 1:length(areaIndex)    % all areas
         else
            stepsY = areaY - templY;
         end
-        for y = 1:stepsY % y coord
-            for x = 1:stepsX  % x coord
-                temp = rotTempl;
-                temp(:,:,2) = rotTempl_b;
-                c = corr2_wb(area(y:(y+templY-1),x:(x+templX-1)),temp,rotActiveTempl);
+        y = 1;
+        for yy = 1:2:stepsY % y coord
+            x = 1;
+            for xx = 1:2:stepsX  % x coord
+                c = corr2_wb(area(y:(y+templY-1),x:(x+templX-1)),rotTempl,rotActiveTempl);
                 if (bestCorr(x,y,1) < c)
                     bestCorr(x,y,1) = c;
-                    bestCorr(x,y,2) = fi;
+                    bestCorr(x,y,2) = fi;                 
+%                     if (c > 0.83)
+%                         figure(4);
+%                         subplot(3,1,1);
+%                         imshow(rotTempl);
+%                         subplot(3,1,2);
+%                         hold on
+%                         imshow(area(y:(y+templY-1),x:(x+templX-1)));
+%                         edges = edge(rotActiveTempl,'sobel');
+%                         [yy xx] = find(edges == 1);
+%                         plot(xx, yy, 'b.');
+%                         axis([1 size(rotTempl,2) 1 size(rotTempl,1)])
+%                         hold off
+%                         subplot(3,1,3);
+%                         hold on
+%                         areaC = zeros(areaY+vArea, areaX+vArea,3,'uint8');
+%                         areaC(1:areaY, 1:areaX, :) = imCol(round(box(iAr,2)):round(box(iAr,2)+areaY-1), round(box(iAr,1)):round(box(iAr,1)+areaX-1),:);
+%                         imshow(areaC(y:(y+templY-1),x:(x+templX-1),:));
+%                         edges = edge(rotActiveTempl,'sobel');
+%                         [yy xx] = find(edges == 1);
+%                         plot(xx, yy, 'b.');
+%                         axis([1 size(rotTempl,2) 1 size(rotTempl,1)])
+%                         hold off
+%                         title(sprintf('X=%d, Y=%d,fi=%d, corr=%f',x,y,fi,c))
+%                         input('asa');
+%                     end
                 end
-%                 figure(4);
-%                 subplot(2,1,1);
-%                 imshow(rotTempl);
-%                 subplot(2,1,2);
-%                 hold on
-%                 imshow(area(y:(y+templY-1),x:(x+templX-1)));
-%                 edges = edge(rotActiveTempl,'sobel');
-%                 [yy xx] = find(edges == 1);
-%                 plot(xx, yy, 'b.');
-%                 hold off
-%                 title(sprintf('X=%d, Y=%d,fi=%d, corr=%f',x,y,fi,c))
-%                 input('asa');
+                x = x + 1;
             end
+            y = y + 1;
         end
+        fi = fi + step;
     end
-    toc
+    
     % cut blank space
     mask = bestCorr(:,:,1) > 0;
     tmpX = sum(mask,2) + 1;
     tmpY = sum(mask,1) + 1;
     bestCorr = bestCorr(1:tmpY,1:tmpX,:);
+    [bx by bfi] = GetCoords(bestCorr, 0.9);
     
-    % filter and get peaks responsed to resistors
-    %mask = bestCorr(:,:,1) > 0.82;
-    %surf(bestCorr(:,:,1).*mask)
-    %input('asa');
+%     figure(4);
+    areaC = zeros(areaY+vArea, areaX+vArea,3,'uint8');
+    areaC(1:areaY, 1:areaX, :) = imCol(round(box(iAr,2)):round(box(iAr,2)+areaY-1), round(box(iAr,1)):round(box(iAr,1)+areaX-1),:);   % copy found area from image
+    rotTempl = CropBlankSpace(imrotate(template,bfi));
+    rotRes = imrotate(areaC(by:(by+size(rotTempl,1)-1),bx:(bx+size(rotTempl,2)-1),:),-bfi);
+    [ans xOff1 xOff2 yOff1 yOff2] = CropBlankSpace(imrotate(rotTempl,-bfi));
+    rotRes = rotRes(yOff1+1:end-yOff2,xOff1+1:end-xOff2,:);
+%     subplot(2,1,1);
+%     imshow(areaC(1:areaY, 1:areaX, :));
+%     subplot(2,1,2);
+%     imshow(rotRes);
+%     input('asa');
     
-    [y x] = find(bestCorr(:,:,1)==max(max(bestCorr(:,:,1)))); % find max value
     
-    rotTempl = imrotate(template,bestCorr(y(1),x(1),2));
-    rotActiveTempl = imrotate(activeTempl,bestCorr(y(1),x(1),2));
+    %filter and get peaks responsed to resistors
+%     figure(4)
+%     mask = bestCorr(:,:,1) > 0.9;
+%     surf(bestCorr(:,:,1).*mask)
+%     input('asa');
+    
+    rotTempl = imrotate(template,bfi);
+    rotActiveTempl = imrotate(activeTempl,bfi);
     templX = size(rotTempl,2);
     templY = size(rotTempl,1);
 
-    % crop blank space after rotate
-    xSum = sum(rotTempl,1);
-    ySum = sum(rotTempl,2);
-    xOff1 = sum(sum(xSum(1:round(templX/2))==0))+1; % get zeros on start x
-    xOff2 = sum(sum(xSum(round(templX/2):end)==0)); % get zeros on end x
-    yOff1 = sum(sum(ySum(1:round(templY/2))==0))+1; % get zeros on start y
-    yOff2 = sum(sum(ySum(round(templY/2):end)==0)); % get zeros on end y
+    [rotTempl xOff1 xOff2 yOff1 yOff2] = CropBlankSpace(rotTempl);
     
-    rotActiveTempl = rotActiveTempl(yOff1:end-yOff2,xOff1:end-xOff2);
-%     
-%     edges = edge(rotActiveTempl,'sobel');
-%     [yy xx] = find(edges == 1);
-%     plot(round(box(iAr,1))+xx-x-(xOff1+xOff2)/4, round(box(iAr,2))+yy-y-(yOff1+yOff2)/4, 'r.');
-    boundaries = bwboundaries(rotActiveTempl);
-
-    numberOfBoundaries = size(boundaries);
+    rotActiveTempl = rotActiveTempl(yOff1+1:end-yOff2,xOff1+1:end-xOff2);
     
-    for k = 1 : numberOfBoundaries
-        thisBoundary = boundaries{k};
-        plot(round(box(iAr,1))-x(1)-(xOff1+xOff2)/4+thisBoundary(:,2), round(box(iAr,2))-y(1)-(yOff1+yOff2)/4+thisBoundary(:,1), 'r', 'LineWidth', 2);
-    end
+    edges = edge(rotActiveTempl,'sobel');
+    [yy xx] = find(edges == 1);
+    plot(round(box(iAr,1))+xx-bx-xOff1/2, round(box(iAr,2))+yy-by-yOff1/2, 'r.');
 end
+disp('Total time: ');
+toc
+disp('Total: ');
+g
 hold off
 
+%%
+% 
+% figure(4);
+% subplot(2,1,1);
+% rotTempl = imrotate(template,40);
+% imshow(rotTempl);
+% subplot(2,1,2);
+% crop = CropBlankSpace(rotTempl);
+% imshow(crop);
 
 
 
