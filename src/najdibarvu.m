@@ -1,6 +1,6 @@
 close all;
 clear all;
-vzorekRGB = imread('../images/zly_resistor4.png');
+vzorekRGB = imread('../images/vzorek5.png');
 hsv = rgb2hsv(vzorekRGB);
 % figure;
 % imshow(vzorekRGB)
@@ -17,8 +17,8 @@ Tsat = 0.35;
 imBin = hsv(:,:,2) > Tsat;     % From saturation
 imBin = imopen(imBin, seOpen);
 imBin = imclose(imBin, seClose);
-% figure;
-% imshow(imBin);
+figure;
+imshow(imBin);
 
 
 for i=1:size(imBin,2)
@@ -28,14 +28,14 @@ for i=1:size(imBin,2)
 end
 %zacatek prohledavani
 for i=1:size(sumator_y,2)
-   if sumator_y(1,i) >= size(imBin,1)*3/4
+   if sumator_y(1,i) >= size(imBin,1)*0.7
        pocatek_y = i;
        break;
    end
 end
 %konec prohledavani
 for i=size(sumator_y,2):-1:1
-   if sumator_y(1,i) >= size(imBin,1)*3/4
+   if sumator_y(1,i) >= size(imBin,1)*0.7
        konec_y = i;
        break;
    end

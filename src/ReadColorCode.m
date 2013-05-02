@@ -21,6 +21,7 @@ imBin = imclose(imBin, seClose);
 
 
 
+
 for i=1:size(imBin,2)
    
     sumator_y(1,i) = sum(imBin(:,i)); 
@@ -292,12 +293,12 @@ hodnota_odporu = (retezec_hodnot(1,2)*10 + retezec_hodnot(1,4))*nasobek;
 ValueOfResistor = hodnota_odporu;
 
 hodnota_odporu_str = num2str(hodnota_odporu);
-text(10,10,hodnota_odporu_str);
+text(20,50,hodnota_odporu_str);
 else 
     hodnota_odporu = 0;
 ValueOfResistor = hodnota_odporu;
 hodnota_odporu_str = num2str(hodnota_odporu);
-text(10,10,hodnota_odporu_str);
+text(20,50,hodnota_odporu_str);
 end
 end
 
