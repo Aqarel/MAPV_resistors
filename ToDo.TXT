@@ -1,0 +1,10 @@
+Problémy:
+======================
+
+Funkce ReadColorCode.m
+----------------------
+- spadne (nepozna vsechny prouzky) kdyz ji predhodim treti rezistor z obrazku white_1.png viz MainFunction.
+
+DetectResistor.m
+----------------------
+- udelat detekci vice rezistoru v jedne oblasti
