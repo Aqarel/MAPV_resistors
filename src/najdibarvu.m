@@ -1,6 +1,6 @@
 close all;
 clear all;
-vzorekRGB = imread('../images/vzorek14.png');
+vzorekRGB = imread('../images/zly_resistor4.png');
 hsv = rgb2hsv(vzorekRGB);
 % figure;
 % imshow(vzorekRGB)
@@ -111,17 +111,17 @@ for n= pocatek_x:konec_x
         j = j+1;  
         continue; 
         % oranzova
-        elseif vod1_h>=15 && vod1_h<=25 && vod1_s>=85 && vod1_s<=100 && vod1_v>=55 && vod1_v<=75
+        elseif vod1_h>=15 && vod1_h<=30 && vod1_s>=85 && vod1_s<=100 && vod1_v>=51 && vod1_v<=75
         barvy(k,j)= 3;
         j = j+1;  
         continue;
         %zluta
-        elseif vod1_h>=40 && vod1_h<=50&& vod1_s>=75 && vod1_s<=90 && vod1_v>=50 && vod1_v<=65
+        elseif vod1_h>=40 && vod1_h<=50&& vod1_s>=60 && vod1_s<=90 && vod1_v>=50 && vod1_v<=75
         barvy(k,j)= 4;
         j = j+1;
       continue;
         % zelena
-        elseif vod1_h>=100 && vod1_h<=130 && vod1_s>=50 && vod1_s<=75 && vod1_v>=18 && vod1_v<=30
+        elseif vod1_h>=80 && vod1_h<=130 && vod1_s>=50 && vod1_s<=75 && vod1_v>=18 && vod1_v<=30
         barvy(k,j)= 5;
         j = j+1;
        continue;
@@ -269,6 +269,8 @@ end
     end
 retezec_hodnot; 
 
+if size(retezec_hodnot,2)==7
+
 % urèení násobku
 switch(retezec_hodnot(1,6))
    case 10
@@ -296,4 +298,8 @@ end
 hodnota_odporu = (retezec_hodnot(1,2)*10 + retezec_hodnot(1,4))*nasobek
 hodnota_odporu_str = num2str(hodnota_odporu)
 text(10,10,hodnota_odporu_str)
-
+else 
+hodnota_odporu = 0;
+hodnota_odporu_str = num2str(hodnota_odporu)
+text(10,10,hodnota_odporu_str)
+end
