@@ -9,13 +9,14 @@ function [resistors] = DetectResistors(imCol, template)
 % ======================= Constant =======================
 seOpen = strel('square', 5);
 seClose = strel('square', 8);
-Tsat = 0.35;                    % threshold for convert to binary image - saturation from HSV
+Tsat = 0.25;                    % threshold for convert to binary image - saturation from HSV
 resL = size(template,2);        % resistor lenght in pixel
 resD = size(template,1);        % resistor diameter in pixel
 vArea = 30;                     % virtual area, use for matching beetwen template and test subarea, sometimes template is bigger than found area,
 vAreaD = 10;                    % virtual area diameter, only for finding potential areas with resistor
+wArea = sum(sum(template > 0)); % count of pixel in resistor
 
-resistors = struct('resistor',[],'value',[],'center',[],'boundary',[]);
+resistors = struct('resistor',[],'value',[],'center',[],'maskCoord',[],'mask',[],'boundary',[],'lblPos',[]);
 
 % ========= Detection big area in image from HSV ==========
 Ihsv = rgb2hsv(imCol);
@@ -31,10 +32,21 @@ box = cat(1, s.BoundingBox);
 % Find only big area
 areaIndex = 0;
 for i = 1:length(s)
-  areaSize = sort(box(i,3:4),'descend');
-  if (((areaSize(1)+vArea)*(areaSize(2)+vAreaD) > resL*resD) && ((areaSize(2)+vAreaD) > resD))   % Area is bigger than area of resistor and smaller size of box is bigger than diameter of resistor
-    areaIndex(end + 1) = i;     % index of area
-  end
+    areaSize = sort(box(i,3:4),'descend');
+    
+    % Get area from image and count object pixel
+    areaX = round(box(i,3)); 
+    areaY = round(box(i,4)); 
+    area = zeros(areaY, areaX);
+    area(1:areaY, 1:areaX) = imBin(round(box(i,2)):round(box(i,2)+areaY-1), round(box(i,1)):round(box(i,1)+areaX-1));
+    tArea = sum(sum(area));
+   
+    % - Area is bigger than area of resistor 
+    % - Smaller size of box is bigger than diameter of resistor
+    % - Object area (sum of white pixels) must be bigger than template
+    if (((areaSize(1)+vArea)*(areaSize(2)+vAreaD) > resL*resD) && ((areaSize(2)+vAreaD) > resD) && (tArea > (0.7*wArea)))   
+        areaIndex(end + 1) = i;     % index of area
+    end
 end
 
 if size(areaIndex,2) == 1
@@ -107,7 +119,33 @@ for j = 1:length(areaIndex)    % all areas
             for xx = 1:2:stepsX  % x coord
                 c = corr2_wb(area(y:(y+templY-1),x:(x+templX-1)),rotTempl,rotActiveTempl);
                 
-                if ((c < 0.85) && smallSpace) % small correlation and small space for shifting and improvement of correlation
+%                      if (c > 0.70)
+%                         figure(4);
+%                         subplot(3,1,1);
+%                         imshow(rotTempl);
+%                         subplot(3,1,2);
+%                         hold on
+%                         imshow(area(y:(y+templY-1),x:(x+templX-1)));
+%                         edges = edge(rotActiveTempl,'sobel');
+%                         [yy xx] = find(edges == 1);
+%                         plot(xx, yy, 'b.');
+%                         axis([1 size(rotTempl,2) 1 size(rotTempl,1)])
+%                         hold off
+%                         subplot(3,1,3);
+%                         hold on
+%                         areaC = zeros(areaY+vArea, areaX+vArea,3,'uint8');
+%                         areaC(1:areaY, 1:areaX, :) = imCol(round(box(iAr,2)):round(box(iAr,2)+areaY-1), round(box(iAr,1)):round(box(iAr,1)+areaX-1),:);
+%                         imshow(areaC(y:(y+templY-1),x:(x+templX-1),:));
+%                         edges = edge(rotActiveTempl,'sobel');
+%                         [yy xx] = find(edges == 1);
+%                         plot(xx, yy, 'b.');
+%                         axis([1 size(rotTempl,2) 1 size(rotTempl,1)])
+%                         hold off
+%                         title(sprintf('X=%d, Y=%d,fi=%d, corr=%f',x,y,fi,c))
+%                         input('asa');
+%                     end
+                
+                if ((c < 0.80) && smallSpace) % small correlation and small space for shifting and improvement of correlation
                     fi = fi + bigStep;
                     didBigStep = 2;
                     newFi = 1;
@@ -117,7 +155,8 @@ for j = 1:length(areaIndex)    % all areas
                 if(didBigStep == 2)         % goood correlation ;), but is better try smaller angle (bigStep is soo big :))) 
                      fi = fi - 5;
                      didBigStep = 0;
-                     continue;
+                     newFi = 1;
+                     break;
                 end
                 
                 if (bestCorr(x,y,1) < c)
@@ -149,6 +188,8 @@ for j = 1:length(areaIndex)    % all areas
     areaC = zeros(areaY+vArea, areaX+vArea,3,'uint8');
     areaC(1:areaY, 1:areaX, :) = imCol(round(box(iAr,2)):round(box(iAr,2)+areaY-1), round(box(iAr,1)):round(box(iAr,1)+areaX-1),:);   % copy found area from image
     rotTempl = CropBlankSpace(imrotate(template,bfi));
+    % casto pada na ruzne rozmery, pokud je spatne nalezen uhel, respektive
+    % neni nalzene vubec
     rotRes = imrotate(areaC(by:(by+size(rotTempl,1)-1),bx:(bx+size(rotTempl,2)-1),:),-bfi);
     [ans xOff1 xOff2 yOff1 yOff2] = CropBlankSpace(imrotate(rotTempl,-bfi));
     rotRes = rotRes(yOff1+1:end-yOff2,xOff1+1:end-xOff2,:);
@@ -158,15 +199,41 @@ for j = 1:length(areaIndex)    % all areas
     rotActiveTempl = imrotate(activeTempl,bfi);
     [rotTempl xOff1 xOff2 yOff1 yOff2] = CropBlankSpace(rotTempl);
     
-    edges = edge(rotActiveTempl,'sobel');
-    [yy xx] = find(edges == 1);
-    xx = round(box(iAr,1))+xx-bx-xOff1;
-    yy = round(box(iAr,2))+yy-by-yOff1;
-    
+    % Center of area with resistor
     cx = round(box(iAr,1))-bx-xOff1+round(size(rotActiveTempl,2)/2);
     cy = round(box(iAr,2))-by-yOff1+round(size(rotActiveTempl,1)/2);
+    
+    % Get corner of area with resistor
+    crx = zeros(5,1);
+    cry = zeros(5,1);
+    [ans xOffcr1 xOffcr2 yOffcr1 yOffcr2] = CropBlankSpace(rotActiveTempl);
+    % Left corner
+    tmpY = find(rotActiveTempl(:,xOffcr1+1)==1);
+    crx(1) = xOffcr1+1;
+    cry(1) = tmpY(1);
+    
+    % Right corner
+    tmpY = find(rotActiveTempl(:,end - xOffcr2)==1);
+    crx(3) = size(rotActiveTempl,2) - xOffcr1;
+    cry(3) = tmpY(1);
+    
+    % Top corner
+    tmpX = find(rotActiveTempl(yOffcr1+1,:)==1);
+    crx(2) = tmpX(1);
+    cry(2) = yOffcr1+1;
+    
+    % Botton corner
+    tmpX = find(rotActiveTempl(end - yOffcr2,:)==1);
+    crx(4) = tmpX(1);
+    cry(4) = size(rotActiveTempl,1) - yOffcr2;
+    
+    crx(5) = crx(1);
+    cry(5) = cry(1);
+  
+    crx = round(box(iAr,1))-bx-xOff1+crx;
+    cry = round(box(iAr,2))-by-yOff1+cry;
 
-    resistors(j) = struct('resistor',rotRes,'value',[],'center',[cx cy],'boundary',[xx yy]);
+    resistors(j) = struct('resistor',rotRes,'value',[],'center',[cx cy],'maskCoord',[],'mask',rotActiveTempl,'boundary',[crx cry],'lblPos',[]);
 
 end
 disp('Total time: ');

@@ -7,13 +7,15 @@ imCol  = imread('../images/white_1.png');%imread('../images/black_3.png');
 template = imread('../images/template3.png');
 
 resistors = DetectResistors(imCol,template);
+
+%resistors = LblSpinningEagle(imCol,resistors);
 %%
 figure(1);
 imshow(imCol);
 hold on
 for i=1:length(resistors)
-   plot(resistors(i).boundary(:,1),resistors(i).boundary(:,2),'g.');
    plot(resistors(i).center(1),resistors(i).center(2),'r*','LineWidth',2,'MarkerSize',15);
+   plot(resistors(i).boundary(:,1),resistors(i).boundary(:,2),'g-','LineWidth',2,'MarkerSize',15);
 end
 hold off
 %%
