@@ -16,7 +16,7 @@ vArea = 30;                     % virtual area, use for matching beetwen templat
 vAreaD = 10;                    % virtual area diameter, only for finding potential areas with resistor
 wArea = sum(sum(template > 0)); % count of pixel in resistor
 
-resistors = struct('resistor',[],'value',[],'center',[],'maskCoord',[],'mask',[],'boundary',[],'lblPos',[]);
+resistors = struct('resistor',[],'value',[],'center',[],'angle',[],'mask',[],'boundary',[],'lblPos',[],'lblRot',[]);
 
 % ========= Detection big area in image from HSV ==========
 Ihsv = rgb2hsv(imCol);
@@ -233,7 +233,7 @@ for j = 1:length(areaIndex)    % all areas
     crx = round(box(iAr,1))-bx-xOff1+crx;
     cry = round(box(iAr,2))-by-yOff1+cry;
 
-    resistors(j) = struct('resistor',rotRes,'value',[],'center',[cx cy],'maskCoord',[],'mask',rotActiveTempl,'boundary',[crx cry],'lblPos',[]);
+    resistors(j) = struct('resistor',rotRes,'value',[],'center',[cx cy],'angle',bfi,'mask',rotActiveTempl,'boundary',[crx cry],'lblPos',[0 0],'lblRot',0);
 
 end
 disp('Total time: ');
