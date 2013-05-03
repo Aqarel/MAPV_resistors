@@ -134,6 +134,17 @@ end
 %% Projde naklikane data a vrati maximalni a minimalni hodnotu a prumer
 close all;
 clc;
+
+% load('../data/clrBrown.mat');
+% load('../data/clrRed.mat');
+% load('../data/clrOrange.mat');
+% load('../data/clrYellow.mat');
+% load('../data/clrGreen.mat');
+% load('../data/clrBlue.mat');
+% load('../data/clrPurple.mat');
+% load('../data/clrGrey.mat');
+% load('../data/clrWhite.mat');
+
 for i=1:length(colors)
     switch colors{i}
         case 'hneda',
@@ -163,6 +174,35 @@ for i=1:length(colors)
     fprintf('H - max: %d, min: %d, prumer: %d\n',round(max(decColor(1,:))), round(min(decColor(1,:))), round(sum(decColor(1,:))/length(decColor(1,:))));
     fprintf('S - max: %d, min: %d, prumer: %d\n',round(max(decColor(2,:))), round(min(decColor(2,:))), round(sum(decColor(2,:))/length(decColor(2,:))));
     fprintf('V - max: %d, min: %d, prumer: %d\n\n',round(max(decColor(3,:))), round(min(decColor(3,:))), round(sum(decColor(3,:))/length(decColor(3,:))));
+    
+    if (i <= 5)
+        figure(1);
+        subplot(5,3,3*(i-1)+1);
+        hist(decColor(1,:));
+        title(sprintf('H pro barvu: %s',colors{i}));
+
+        subplot(5,3,3*(i-1)+2);
+        hist(decColor(2,:));
+        title(sprintf('S pro barvu: %s',colors{i}));
+
+        subplot(5,3,3*(i-1)+3);
+        hist(decColor(3,:));
+        title(sprintf('V pro barvu: %s',colors{i}));
+    else
+        figure(2);
+        subplot(5,3,3*(i-6)+1);
+        hist(decColor(1,:));
+        title(sprintf('H pro barvu: %s',colors{i}));
+
+        subplot(5,3,3*(i-6)+2);
+        hist(decColor(2,:));
+        title(sprintf('S pro barvu: %s',colors{i}));
+
+        subplot(5,3,3*(i-6)+3);
+        hist(decColor(3,:));
+        title(sprintf('V pro barvu: %s',colors{i}));
+    end
+
 end
 
 
