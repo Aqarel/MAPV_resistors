@@ -1,24 +1,26 @@
-function [resImage resValues] = MainFunction(image)
+ close all;
+clear all;
+clc;
 
-% Load template
+% Load images
+imCol  = imread('../images/white_40.png');%imread('../images/black_3.png');
 template = imread('../images/template3.png');
-imCol = image;
 
 resistors = DetectResistors(imCol,template);
 
+%%
 % label size for font size 20
 lblSize = [105 50];
 imgSize = [size(imCol,2) size(imCol,1)];
 
 resistors = LblSpinningEagle(resistors,imgSize,lblSize,0);
-gcf = figure(1);
+gca = figure(1);
 imshow(imCol);
 hold on
 values = cell(length(resistors),1);
 for i=1:length(resistors)
     resistors(i).value = ReadColorCode(resistors(i).resistor);
     values{i} = resistors(i).value;
-    
     plot(resistors(i).center(1),resistors(i).center(2),'r*','LineWidth',2,'MarkerSize',15);
     plot(resistors(i).boundary(:,1),resistors(i).boundary(:,2),'g-','LineWidth',2,'MarkerSize',15);
     
@@ -29,9 +31,5 @@ for i=1:length(resistors)
          'FontUnits','normalized','BackgroundColor',[0 0 0],'Rotation', resistors(i).lblRot)
 end
 hold off
-
-set(gcf, 'menubar', 'none');
-axis off
-frame = getframe(gca);
-resImage = frame.cdata;
 resValues = sort(values);
+
