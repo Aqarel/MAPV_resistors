@@ -11,10 +11,12 @@ clear all
 load('..\data\foundRes.mat')
 pocet_nenalezenych_hodnot=0;
 z=3;
-for z=1:size(foundRes,2)
+% for z=1:size(foundRes,2)
+for z=42:42
  clear modus_celk modus retezec_hodnot vzorekRGB hsv sumator_x sumator_y pocatek_y pocatek_x konec_y konec_x    ;
- 
-vzorekRGB = foundRes(z).resistor;
+ clear modus modus_pasma modus_pres_celou_oblast modus_sum pasmo povolene_pasmo_horni povolene_pasmo_dolni; 
+clear retezec_hodnot vzdalenost_konec vzdalenost_pocatek; 
+ vzorekRGB = foundRes(z).resistor;
 hsv = rgb2hsv(vzorekRGB);
 % figure();
 % imshow(vzorekRGB);
@@ -53,15 +55,15 @@ for i=size(sumator_y,2):-1:1
        break;
    end
 end
+% 
+% vzkresleni ocamcad pocamcad
+figure;
+imshow(vzorekRGB);
+hold on;
 
-%vzkresleni ocamcad pocamcad
-% figure;
-% imshow(vzorekRGB);
-% hold on;
-% 
-% 
-% line([pocatek_y pocatek_y], [1 size(vzorekRGB,1)])
-% line([konec_y konec_y], [1 size(vzorekRGB,1)])
+
+line([pocatek_y pocatek_y], [1 size(vzorekRGB,1)])
+line([konec_y konec_y], [1 size(vzorekRGB,1)])
 
 
 
@@ -86,10 +88,10 @@ for i=size(sumator_x,2):-1:1
 end
 
 %vzkresleni ocamcad pocamcad
-
-% line([1 size(vzorekRGB,2)], [pocatek_x pocatek_x])
-% line([1 size(vzorekRGB,2)], [konec_x konec_x])
-% hold off;
+% 
+line([1 size(vzorekRGB,2)], [pocatek_x pocatek_x])
+line([1 size(vzorekRGB,2)], [konec_x konec_x])
+hold off;
 
 
 
@@ -111,7 +113,8 @@ for n= pocatek_x:konec_x
     
     %hneda
 %       if ((vod1_h>=320 && vod1_h<=360) || (vod1_h>=0 && vod1_h<=36)) && vod1_s>=50 && vod1_s<=100 && vod1_v>=9 && vod1_v<=30
-        if ((vod1_h>=359 && vod1_h<=360) || (vod1_h>=0 && vod1_h<=25)) && vod1_s>=50 && vod1_s<=100 && vod1_v>=5 && vod1_v<=30
+%         if ((vod1_h>=359 && vod1_h<=360) || (vod1_h>=0 && vod1_h<=25)) && vod1_s>=50 && vod1_s<=100 && vod1_v>=5 && vod1_v<=30
+         if ((vod1_h>=359 && vod1_h<=360) || (vod1_h>=0 && vod1_h<=25)) && vod1_s>=50 && vod1_s<=100 && vod1_v>=8 && vod1_v<=30
         barvy(k,j)= 1;
         j = j+1;  
         continue;    
@@ -193,7 +196,7 @@ for n= pocatek_x:konec_x
         continue;
         
  %bila
-        elseif vod1_h>=11 && vod1_h<=66  && vod1_s>=5 && vod1_s<=30 && vod1_v>=60&& vod1_v<=100% 60
+        elseif vod1_h>=10 && vod1_h<=66  && vod1_s>=5 && vod1_s<=40 && vod1_v>=60&& vod1_v<=90% 60
         barvy(k,j)= 9;
         j = j+1;
         continue;
@@ -211,7 +214,8 @@ for n= pocatek_x:konec_x
 %         continue;   
         
         %cerna
-       elseif vod1_v>=0 && vod1_v<=15
+%        elseif vod1_v>=0 && vod1_v<=15
+            elseif vod1_v>=0 && vod1_v<=15
         barvy(k,j)= 0;
         j = j+1; 
         continue;
@@ -376,7 +380,7 @@ end
         
     end
     
-    
+    vzdalenost_pocatek=1;
     % zjisteni jak je natocenej
     for i=1:size(modus,2)
         if modus(1,i)~=99;
@@ -384,7 +388,7 @@ end
             break;
         end
     end
-    
+     vzdalenost_konec = size(modus,2);
     for i=size(modus,2):-1:1
         if modus(1,i)~=99;
             vzdalenost_konec =size(modus,2)- i;
@@ -421,12 +425,12 @@ end
    
      end
     end
-retezec_hodnot; 
+retezec_hodnot;
 
 %  if size(retezec_hodnot,2)	~=7
 %      retezec_hodnot=0;
 %  end
-nasobek =0;
+nasobek =88;
     if size(retezec_hodnot,2)==7
 % urèení násobku
 switch(retezec_hodnot(1,6))
@@ -470,24 +474,26 @@ switch(retezec_hodnot(1,6))
       cislo_1_str = num2str(retezec_hodnot(1,2));
       cislo_2_str = num2str(retezec_hodnot(1,4));
        ValueOfResistor = [ cislo_1_str  cislo_2_str '0' 'M'];
+    case 88
+        ValueOfResistor = 'XX';
 end
 
 
-ValueOfResistor
+ValueOfResistor;
 
 
-% text(20,50,ValueOfResistor);
+ text(20,50,ValueOfResistor);
 else 
     hodnota_odporu = 0;
     pocet_nenalezenych_hodnot = pocet_nenalezenych_hodnot+1;
-    spatny(1,pocet_nenalezenych_hodnot) = z;
-ValueOfResistor = 'XX'
+%     spatny(1,pocet_nenalezenych_hodnot) = z;
+ValueOfResistor = 'XX';
 
-% text(20,50,ValueOfResistor);
+ text(20,50,ValueOfResistor);
 end
 
-pocet_nenalezenych_hodnot
-
+pocet_nenalezenych_hodnot;
+z
 end
 
 

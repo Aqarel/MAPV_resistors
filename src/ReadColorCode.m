@@ -47,14 +47,14 @@ for i=size(sumator_y,2):-1:1
 end
 
 %vzkresleni ocamcad pocamcad
-figure;
-imshow(vzorekRGB);
-hold on;
-
-
-line([pocatek_y pocatek_y], [1 size(vzorekRGB,1)])
-line([konec_y konec_y], [1 size(vzorekRGB,1)])
-
+% figure;
+% imshow(vzorekRGB);
+% hold on;
+% 
+% 
+% line([pocatek_y pocatek_y], [1 size(vzorekRGB,1)])
+% line([konec_y konec_y], [1 size(vzorekRGB,1)])
+% 
 
 
 for i=1:size(imBin,1)
@@ -78,10 +78,10 @@ for i=size(sumator_x,2):-1:1
 end
 
 %vzkresleni ocamcad pocamcad
-
-line([1 size(vzorekRGB,2)], [pocatek_x pocatek_x])
-line([1 size(vzorekRGB,2)], [konec_x konec_x])
-hold off;
+% 
+% line([1 size(vzorekRGB,2)], [pocatek_x pocatek_x])
+% line([1 size(vzorekRGB,2)], [konec_x konec_x])
+% hold off;
 
 
 
@@ -103,7 +103,7 @@ for n= pocatek_x:konec_x
     
     %hneda
 %       if ((vod1_h>=320 && vod1_h<=360) || (vod1_h>=0 && vod1_h<=36)) && vod1_s>=50 && vod1_s<=100 && vod1_v>=9 && vod1_v<=30
-        if ((vod1_h>=359 && vod1_h<=360) || (vod1_h>=0 && vod1_h<=25)) && vod1_s>=50 && vod1_s<=100 && vod1_v>=5 && vod1_v<=30
+        if ((vod1_h>=359 && vod1_h<=360) || (vod1_h>=0 && vod1_h<=25)) && vod1_s>=50 && vod1_s<=100 && vod1_v>=8 && vod1_v<=30
         barvy(k,j)= 1;
         j = j+1;  
         continue;    
@@ -185,7 +185,7 @@ for n= pocatek_x:konec_x
         continue;
         
  %bila
-        elseif vod1_h>=11 && vod1_h<=66  && vod1_s>=5 && vod1_s<=30 && vod1_v>=60&& vod1_v<=100% 60
+        elseif vod1_h>=10 && vod1_h<=66  && vod1_s>=5 && vod1_s<=40 && vod1_v>=60&& vod1_v<=90% 60
         barvy(k,j)= 9;
         j = j+1;
         continue;
@@ -439,12 +439,12 @@ end
     ValueOfResistor
 
 
-text(20,50,ValueOfResistor);
+% text(20,50,ValueOfResistor);
 else 
     hodnota_odporu = 0;
 ValueOfResistor = 'XX'
 
-text(20,50,ValueOfResistor);
+% text(20,50,ValueOfResistor);
 end
 end
 
