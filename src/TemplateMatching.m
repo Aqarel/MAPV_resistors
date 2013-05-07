@@ -3,7 +3,7 @@ close all;
 clear all;
 clc;
 
-imCol  = imread('../images/white_3.png');%imread('../images/black_3.png');
+imCol  = imread('../images/white_7.png');%imread('../images/black_3.png');
 template = imread('../images/template3.png');
 
 % ====== Constant ======
@@ -121,11 +121,11 @@ for j = 1:1%length(areaIndex)    % all areas
         templX = size(rotTempl,2);
         templY = size(rotTempl,1);
         
-        if (templX > (areaX+vArea)) || (templY > (areaY+vArea)) % template is in less one size bigger than area, try other rotation
-            fi = fi + bigStep;  % bigger step than size of template and image match
-            didBigStep = 1;
-            continue; 
-        end
+%         if (templX > (areaX+vArea)) || (templY > (areaY+vArea)) % template is in less one size bigger than area, try other rotation
+%             fi = fi + bigStep;  % bigger step than size of template and image match
+%             didBigStep = 1;
+%             continue; 
+%         end
         
         if(didBigStep == 1)     % size match of template and image match, but is better try smaller angle (bigStep is soo big :))) 
              fi = fi - 5;
@@ -151,17 +151,17 @@ for j = 1:1%length(areaIndex)    % all areas
         smallSpace = areaX*areaY < 1.8*(resL*resD); % it is possible more than 1 resister
         
         y = 1;
-        for yy = 1:2:stepsY % y coord
+        for yy = 1:stepsY % y coord
             x = 1;
-            for xx = 1:2:stepsX  % x coord
+            for xx = 1:stepsX  % x coord
                 c = corr2_wb(area(y:(y+templY-1),x:(x+templX-1)),rotTempl,rotActiveTempl);
                 
-                if ((c < 0.85) && smallSpace) % small correlation and small space for shifting and improvement of correlation
-                    fi = fi + bigStep;
-                    didBigStep = 2;
-                    newFi = 1;
-                    break;
-                end
+%                 if ((c < 0.85) && smallSpace) % small correlation and small space for shifting and improvement of correlation
+%                     fi = fi + bigStep;
+%                     didBigStep = 2;
+%                     newFi = 1;
+%                     break;
+%                 end
                 
                 if(didBigStep == 2)         % goood correlation ;), but is better try smaller angle (bigStep is soo big :))) 
                      fi = fi - 5;
@@ -173,7 +173,7 @@ for j = 1:1%length(areaIndex)    % all areas
                     bestCorr(x,y,1) = c;
                     bestCorr(x,y,2) = fi; 
                     
-%                     if (c > 0.83)
+%                     if (c > 0.7 && y > 60)
 %                         figure(4);
 %                         subplot(3,1,1);
 %                         imshow(rotTempl);
@@ -196,7 +196,8 @@ for j = 1:1%length(areaIndex)    % all areas
 %                         axis([1 size(rotTempl,2) 1 size(rotTempl,1)])
 %                         hold off
 %                         title(sprintf('X=%d, Y=%d,fi=%d, corr=%f',x,y,fi,c))
-%                         input('asa');
+%                         pause(0.05)
+%                         %input('asa');
 %                     end
                 end
                 x = x + 1;
@@ -235,10 +236,13 @@ for j = 1:1%length(areaIndex)    % all areas
     
     
     %filter and get peaks responsed to resistors
-%     figure(4)
-%     mask = bestCorr(:,:,1) > 0.9;
-%     surf(bestCorr(:,:,1).*mask)
-%     input('asa');
+    figure(4)
+    mask = bestCorr(:,:,1) > 0.9;
+    surf(bestCorr(:,:,1).*mask);
+    xlabel('x offset [px]')
+    ylabel('y offset [px]')
+    zlabel('Correlation')
+    input('asa');
     
     rotTempl = imrotate(template,bfi);
     rotActiveTempl = imrotate(activeTempl,bfi);
