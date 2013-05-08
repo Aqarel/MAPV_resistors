@@ -9,7 +9,8 @@ function [resistors] = DetectResistors(imCol, template)
 % ======================= Constant =======================
 seOpen = strel('square', 5);
 seClose = strel('square', 8);
-Tsat = 0.25;                    % threshold for convert to binary image - saturation from HSV
+AREA_SIZE = 0.65;               % minimal part of template area is accepted as resistor
+Tsat = 0.22;                    % threshold for convert to binary image - saturation from HSV
 resL = size(template,2);        % resistor lenght in pixel
 resD = size(template,1);        % resistor diameter in pixel
 vArea = 30;                     % virtual area, use for matching beetwen template and test subarea, sometimes template is bigger than found area,
@@ -44,7 +45,7 @@ for i = 1:length(s)
     % - Area is bigger than area of resistor 
     % - Smaller size of box is bigger than diameter of resistor
     % - Object area (sum of white pixels) must be bigger than template
-    if (((areaSize(1)+vArea)*(areaSize(2)+vAreaD) > resL*resD) && ((areaSize(2)+vAreaD) > resD) && (tArea > (0.7*wArea)))   
+    if (((areaSize(1)+vArea)*(areaSize(2)+vAreaD) > resL*resD) && ((areaSize(2)+vAreaD) > resD) && (tArea > (AREA_SIZE*wArea)))   
         areaIndex(end + 1) = i;     % index of area
     end
 end
@@ -61,11 +62,12 @@ areaIndex = areaIndex(2:end);   % first index is not used
 g = 0;
 tic
 activeTempl = ones(size(template,1),size(template,2));  % mask for rotated resistor, corr calculate only from resistor area, no from blank space
+cntrRes = 1;                    % resistor detected counter    
 for j = 1:length(areaIndex)    % all areas
     iAr = areaIndex(j);
     areaX = round(box(iAr,3)); 
     areaY = round(box(iAr,4)); 
-    area = zeros(areaY+vArea, areaX+vArea);
+    area = zeros(areaY+2*vArea, areaX+2*vArea);
     area(1:areaY, 1:areaX) = imBin(round(box(iAr,2)):round(box(iAr,2)+areaY-1), round(box(iAr,1)):round(box(iAr,1)+areaX-1));   % copy found area from image
     bestCorr = zeros(areaX,areaY,2); % best correlation on the X, Y across fi; save correlation coeficient and fi
     
@@ -114,37 +116,10 @@ for j = 1:length(areaIndex)    % all areas
         smallSpace = areaX*areaY < 1.8*(resL*resD); % it is possible more than 1 resister
         
         y = 1;
-        for yy = 1:2:stepsY % y coord
+        for yy = 1:1:stepsY % y coord
             x = 1;
-            for xx = 1:2:stepsX  % x coord
-                c = corr2_wb(area(y:(y+templY-1),x:(x+templX-1)),rotTempl,rotActiveTempl);
-                
-%                      if (c > 0.70)
-%                         figure(4);
-%                         subplot(3,1,1);
-%                         imshow(rotTempl);
-%                         subplot(3,1,2);
-%                         hold on
-%                         imshow(area(y:(y+templY-1),x:(x+templX-1)));
-%                         edges = edge(rotActiveTempl,'sobel');
-%                         [yy xx] = find(edges == 1);
-%                         plot(xx, yy, 'b.');
-%                         axis([1 size(rotTempl,2) 1 size(rotTempl,1)])
-%                         hold off
-%                         subplot(3,1,3);
-%                         hold on
-%                         areaC = zeros(areaY+vArea, areaX+vArea,3,'uint8');
-%                         areaC(1:areaY, 1:areaX, :) = imCol(round(box(iAr,2)):round(box(iAr,2)+areaY-1), round(box(iAr,1)):round(box(iAr,1)+areaX-1),:);
-%                         imshow(areaC(y:(y+templY-1),x:(x+templX-1),:));
-%                         edges = edge(rotActiveTempl,'sobel');
-%                         [yy xx] = find(edges == 1);
-%                         plot(xx, yy, 'b.');
-%                         axis([1 size(rotTempl,2) 1 size(rotTempl,1)])
-%                         hold off
-%                         title(sprintf('X=%d, Y=%d,fi=%d, corr=%f',x,y,fi,c))
-%                         input('asa');
-%                     end
-                
+            for xx = 1:1:stepsX  % x coord
+                c = corr2_wb(area(y:(y+templY-1),x:(x+templX-1)),rotTempl,rotActiveTempl);     
                 if ((c < 0.80) && smallSpace) % small correlation and small space for shifting and improvement of correlation
                     fi = fi + bigStep;
                     didBigStep = 2;
@@ -182,7 +157,11 @@ for j = 1:length(areaIndex)    % all areas
     tmpX = sum(mask,2) + 1;
     tmpY = sum(mask,1) + 1;
     bestCorr = bestCorr(1:tmpY,1:tmpX,:);
-    [bx by bfi] = GetCoords(bestCorr, 0.9);
+    [bx by bfi bCorr] = GetCoords(bestCorr, 0.9);
+    
+    if bCorr < 0.8  % small correlation, no detect resistor
+       continue; 
+    end
     
     % Get color resistor in horizontal position
     areaC = zeros(areaY+vArea, areaX+vArea,3,'uint8');
@@ -200,8 +179,8 @@ for j = 1:length(areaIndex)    % all areas
     [rotTempl xOff1 xOff2 yOff1 yOff2] = CropBlankSpace(rotTempl);
     
     % Center of area with resistor
-    cx = round(box(iAr,1))-bx-xOff1+round(size(rotActiveTempl,2)/2);
-    cy = round(box(iAr,2))-by-yOff1+round(size(rotActiveTempl,1)/2);
+    cx = round(box(iAr,1))+bx-xOff1+round(size(rotActiveTempl,2)/2);
+    cy = round(box(iAr,2))+by-yOff1+round(size(rotActiveTempl,1)/2);
     
     % Get corner of area with resistor
     crx = zeros(5,1);
@@ -210,7 +189,7 @@ for j = 1:length(areaIndex)    % all areas
     % Left corner
     tmpY = find(rotActiveTempl(:,xOffcr1+1)==1);
     crx(1) = xOffcr1+1;
-    cry(1) = tmpY(1);
+    cry(1) = tmpY(end);
     
     % Right corner
     tmpY = find(rotActiveTempl(:,end - xOffcr2)==1);
@@ -224,20 +203,19 @@ for j = 1:length(areaIndex)    % all areas
     
     % Botton corner
     tmpX = find(rotActiveTempl(end - yOffcr2,:)==1);
-    crx(4) = tmpX(1);
+    crx(4) = tmpX(end);
     cry(4) = size(rotActiveTempl,1) - yOffcr2;
     
     crx(5) = crx(1);
     cry(5) = cry(1);
   
-    crx = round(box(iAr,1))-bx-xOff1+crx;
-    cry = round(box(iAr,2))-by-yOff1+cry;
+    crx = round(box(iAr,1))+bx-xOff1+crx;
+    cry = round(box(iAr,2))+by-yOff1+cry;
 
-    resistors(j) = struct('resistor',rotRes,'value',[],'center',[cx cy],'angle',bfi,'mask',rotActiveTempl,'boundary',[crx cry],'lblPos',[0 0],'lblRot',0);
-
+    resistors(cntrRes) = struct('resistor',rotRes,'value',[],'center',[cx cy],'angle',bfi,'mask',rotActiveTempl,'boundary',[crx cry],'lblPos',[0 0],'lblRot',0);
+    cntrRes = cntrRes + 1;
 end
 disp('Total time: ');
 toc
 disp('Total angle loop: ');
 g
-

@@ -4,6 +4,8 @@
 close all;
 clear all;
 clc;
+lblSize = [105 50];
+imgSize = [size(imCol,2) size(imCol,1)];
 
 template = imread('../images/template3.png');
 IMAGES = 64;
@@ -11,32 +13,40 @@ IMAGES = 64;
 badIm = [7 11 45 46 47 50 51]; 
 
 %% Only test all images if they are good
-% for i=1:IMAGES
-%     if sum(badIm == i) > 0   % no load bad image :(
-%         continue;
-%     end 
-%     
-%     imCol  = imread(sprintf('../images/white_%d.png',i));
-%     resistors = DetectResistors(imCol,template);
-%     
-%     input(sprintf('Show image white_%d.png?',i))
-%     figure(1);
-%     imshow(imCol);
-%     hold on
-%     for j=1:length(resistors)
-%         plot(resistors(j).center(1),resistors(j).center(2),'r*','LineWidth',2,'MarkerSize',15);
-%         plot(resistors(j).boundary(:,1),resistors(j).boundary(:,2),'g-','LineWidth',2,'MarkerSize',15);
-%     end
-%     hold off
-%     title(sprintf('Image white_%d.png?',i));
-%     
-%     figure(2)
-%     for j=1:length(resistors)
-%         subplot(1,length(resistors),j)
-%         imshow(resistors(j).resistor);
-%     end
-%     title(sprintf('Image white_%d.png?',i));
-% end
+for i=1:IMAGES
+    if sum(badIm == i) > 0   % no load bad image :(
+        continue;
+    end 
+    
+    imCol  = imread(sprintf('../images/white_%d.png',i));
+    resistors = DetectResistors(imCol,template);
+    
+    input(sprintf('Show image white_%d.png?',i))
+    resistors = LblSpinningEagle(resistors,imgSize,lblSize,0);
+    figure(1);
+    imshow(imCol);
+    hold on
+    for j=1:length(resistors)
+        resistors(j).value = ReadColorCode(resistors(j).resistor);
+        plot(resistors(j).center(1),resistors(j).center(2),'r*','LineWidth',2,'MarkerSize',15);
+        plot(resistors(j).boundary(:,1),resistors(j).boundary(:,2),'g-','LineWidth',2,'MarkerSize',15);
+
+        plot([resistors(j).center(1) resistors(j).lblPos(1)-round(lblSize(1)/2)],...
+             [resistors(j).center(2) resistors(j).lblPos(2)-round(lblSize(2)/2)],'r-','LineWidth',2);
+        text(resistors(j).lblPos(1), resistors(j).lblPos(2), resistors(j).value,...
+             'Color', 'r', 'FontSize',20,'VerticalAlignment','bottom','HorizontalAlignment','right',...
+             'FontUnits','normalized','BackgroundColor',[0 0 0],'Rotation', resistors(j).lblRot)
+    end
+    hold off
+    title(sprintf('Image white_%d.png?',i));
+    
+    figure(2)
+    for j=1:length(resistors)
+        subplot(1,length(resistors),j)
+        imshow(resistors(j).resistor);
+    end
+    title(sprintf('Image white_%d.png?',i));
+end
 %% Load and find all resistor
 
 % cntrRes = 0;    % count of found resistors

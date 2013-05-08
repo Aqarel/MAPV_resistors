@@ -1,4 +1,4 @@
-function [x y fi] = GetCoords(corrMap, T)
+function [x y fi corr] = GetCoords(corrMap, T)
 % Find in correlation map all resistor and return their parametres
 % Input:
 % - corrMap - map of correlation for x and y shift
@@ -11,3 +11,4 @@ function [x y fi] = GetCoords(corrMap, T)
 x = x(1);
 y = y(1);
 fi = corrMap(x,y,2);
+corr = corrMap(x,y,1);

@@ -3,7 +3,7 @@ clear all;
 clc;
 
 % Load images
-imCol  = imread('../images/white_1.png');%imread('../images/black_3.png');
+imCol  = imread('../images/white_15.png');%imread('../images/black_3.png');
 template = imread('../images/template3.png');
 
 resistors = DetectResistors(imCol,template);
