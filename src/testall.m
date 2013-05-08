@@ -1,7 +1,9 @@
 close all;
 clear all;
 clc;
-for i=21:30
+for i=30:35
+       
+    
     close all;
     poradi = num2str(i)
     cesta= ['../images/white_' poradi '.png'];

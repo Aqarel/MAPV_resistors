@@ -12,10 +12,10 @@ load('..\data\foundRes.mat')
 pocet_nenalezenych_hodnot=0;
 z=3;
 % for z=1:size(foundRes,2)
-for z=42:42
+for z=189:221
  clear modus_celk modus retezec_hodnot vzorekRGB hsv sumator_x sumator_y pocatek_y pocatek_x konec_y konec_x    ;
  clear modus modus_pasma modus_pres_celou_oblast modus_sum pasmo povolene_pasmo_horni povolene_pasmo_dolni; 
-clear retezec_hodnot vzdalenost_konec vzdalenost_pocatek; 
+clear retezec_hodnot vzdalenost_konec vzdalenost_pocatek barvy hodnota_odporu nasobek; 
  vzorekRGB = foundRes(z).resistor;
 hsv = rgb2hsv(vzorekRGB);
 % figure();
@@ -57,13 +57,13 @@ for i=size(sumator_y,2):-1:1
 end
 % 
 % vzkresleni ocamcad pocamcad
-figure;
-imshow(vzorekRGB);
-hold on;
-
-
-line([pocatek_y pocatek_y], [1 size(vzorekRGB,1)])
-line([konec_y konec_y], [1 size(vzorekRGB,1)])
+% figure(z);
+% imshow(vzorekRGB);
+% hold on;
+% 
+% 
+% line([pocatek_y pocatek_y], [1 size(vzorekRGB,1)])
+% line([konec_y konec_y], [1 size(vzorekRGB,1)])
 
 
 
@@ -89,10 +89,10 @@ end
 
 %vzkresleni ocamcad pocamcad
 % 
-line([1 size(vzorekRGB,2)], [pocatek_x pocatek_x])
-line([1 size(vzorekRGB,2)], [konec_x konec_x])
-hold off;
-
+% line([1 size(vzorekRGB,2)], [pocatek_x pocatek_x])
+% line([1 size(vzorekRGB,2)], [konec_x konec_x])
+% hold off;
+% 
 
 
 %x =[10 11 12 13 14 15 16 17 18 19 20 30 31 32 33 34 35 36 37 38 39 40 ];
@@ -119,7 +119,7 @@ for n= pocatek_x:konec_x
         j = j+1;  
         continue;    
         % cervena
-        elseif ((vod1_h>=320 && vod1_h<=360) ||(vod1_h>=0 && vod1_h<=35) ) && vod1_s>=80 && vod1_s<=100 && vod1_v>=31 && vod1_v<=60
+        elseif ((vod1_h>=320 && vod1_h<=360) ||(vod1_h>=0 && vod1_h<=15) ) && vod1_s>=80 && vod1_s<=100 && vod1_v>=31 && vod1_v<=60
         barvy(k,j)= 2;
         j = j+1;  
         continue; 
@@ -131,7 +131,7 @@ for n= pocatek_x:konec_x
         continue;
         %zluta
 %         elseif vod1_h>=40 && vod1_h<=50&& vod1_s>=75 && vod1_s<=90 && vod1_v>=50 && vod1_v<=65
-        elseif vod1_h>=40 && vod1_h<=51&& vod1_s>=75 && vod1_s<=93 && vod1_v>=40 && vod1_v<=70
+        elseif vod1_h>=35 && vod1_h<=55&& vod1_s>=75 && vod1_s<=95 && vod1_v>=40 && vod1_v<=70
         barvy(k,j)= 4;
         j = j+1;
       continue;
@@ -158,6 +158,7 @@ for n= pocatek_x:konec_x
 %         j = j+1;
 %         continue;
          %seda1
+%           elseif vod1_h>=20 && vod1_h<=45 && vod1_s>=15 && vod1_s<=52 && vod1_v>=15 && vod1_v<=30
        elseif vod1_h>=0 && vod1_h<=35 && vod1_s>=5 && vod1_s<=52 && vod1_v>=13 && vod1_v<=38
         barvy(k,j)= 8;
         j = j+1;
@@ -388,6 +389,7 @@ end
             break;
         end
     end
+    
      vzdalenost_konec = size(modus,2);
     for i=size(modus,2):-1:1
         if modus(1,i)~=99;
@@ -482,18 +484,18 @@ end
 ValueOfResistor;
 
 
- text(20,50,ValueOfResistor);
+%   text(20,50,ValueOfResistor);
 else 
     hodnota_odporu = 0;
     pocet_nenalezenych_hodnot = pocet_nenalezenych_hodnot+1;
-%     spatny(1,pocet_nenalezenych_hodnot) = z;
+     spatny(1,pocet_nenalezenych_hodnot) = z;
 ValueOfResistor = 'XX';
 
- text(20,50,ValueOfResistor);
+%   text(20,50,ValueOfResistor);
 end
 
 pocet_nenalezenych_hodnot;
-z
+
 end
 
 
