@@ -5,9 +5,11 @@ close all;
 clear all;
 clc;
 lblSize = [105 50];
+imCol  = imread('../images/white_1.png');
 imgSize = [size(imCol,2) size(imCol,1)];
 
 template = imread('../images/template3.png');
+colors = {'hneda' 'cervena' 'oranzova' 'zluta' 'zelena' 'modra' 'fialova' 'seda' 'bila'};
 IMAGES = 64;
 % image not to load
 badIm = [7 11 45 46 47 50 51]; 
@@ -79,7 +81,6 @@ end
 
 %% Naklikani dat
 load('../data/foundRes.mat');
-colors = {'hneda' 'cervena' 'oranzova' 'zluta' 'zelena' 'modra' 'fialova' 'seda' 'bila'};
 
 % jednotlive barvicky
 for i=1:length(colors)
@@ -145,15 +146,15 @@ end
 close all;
 clc;
 
-% load('../data/clrBrown.mat');
-% load('../data/clrRed.mat');
-% load('../data/clrOrange.mat');
-% load('../data/clrYellow.mat');
-% load('../data/clrGreen.mat');
-% load('../data/clrBlue.mat');
-% load('../data/clrPurple.mat');
-% load('../data/clrGrey.mat');
-% load('../data/clrWhite.mat');
+load('../data/clrBrown.mat');
+load('../data/clrRed.mat');
+load('../data/clrOrange.mat');
+load('../data/clrYellow.mat');
+load('../data/clrGreen.mat');
+load('../data/clrBlue.mat');
+load('../data/clrPurple.mat');
+load('../data/clrGrey.mat');
+load('../data/clrWhite.mat');
 
 for i=1:length(colors)
     switch colors{i}
