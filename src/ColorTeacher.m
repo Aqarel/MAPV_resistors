@@ -201,15 +201,15 @@ for i=1:length(colors)
         title(sprintf('V pro barvu: %s',colors{i}));
     else
         figure(2);
-        subplot(5,3,3*(i-6)+1);
+        subplot(4,3,3*(i-6)+1);
         hist(decColor(1,:));
         title(sprintf('H pro barvu: %s',colors{i}));
 
-        subplot(5,3,3*(i-6)+2);
+        subplot(4,3,3*(i-6)+2);
         hist(decColor(2,:));
         title(sprintf('S pro barvu: %s',colors{i}));
 
-        subplot(5,3,3*(i-6)+3);
+        subplot(4,3,3*(i-6)+3);
         hist(decColor(3,:));
         title(sprintf('V pro barvu: %s',colors{i}));
     end

@@ -1,10 +1,16 @@
-function [resImage resValues] = MainFunction(image)
+function [resImage resValues err] = MainFunction(image)
 
 % Load template
 template = imread('../images/template3.png');
 imCol = image;
+resImage = [];
+resValues = [];
 
-resistors = DetectResistors(imCol,template);
+[resistors err] = DetectResistors(imCol,template);
+
+if (err == -1)      % no resistors found
+    return;
+end
 
 % label size for font size 20
 lblSize = [105 50];

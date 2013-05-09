@@ -1,4 +1,4 @@
-function [resistors] = DetectResistors(imCol, template)
+function [resistors err] = DetectResistors(imCol, template)
 % Function detect resistor in image
 % Input:
 % - imCol - color image
@@ -16,6 +16,7 @@ resD = size(template,1);        % resistor diameter in pixel
 vArea = 30;                     % virtual area, use for matching beetwen template and test subarea, sometimes template is bigger than found area,
 vAreaD = 10;                    % virtual area diameter, only for finding potential areas with resistor
 wArea = sum(sum(template > 0)); % count of pixel in resistor
+err = 0;
 
 resistors = struct('resistor',[],'value',[],'center',[],'angle',[],'mask',[],'boundary',[],'lblPos',[],'lblRot',[]);
 
@@ -52,6 +53,7 @@ end
 
 if size(areaIndex,2) == 1
     disp('ERROR: No resistors find');
+    err = -1;
     return;
 end
 
@@ -214,6 +216,9 @@ for j = 1:length(areaIndex)    % all areas
 
     resistors(cntrRes) = struct('resistor',rotRes,'value',[],'center',[cx cy],'angle',bfi,'mask',rotActiveTempl,'boundary',[crx cry],'lblPos',[0 0],'lblRot',0);
     cntrRes = cntrRes + 1;
+end
+if (cntrRes == 1)   % no resistor found
+    err = -1;
 end
 disp('Total time: ');
 toc
